@@ -17,6 +17,13 @@ st.title("ATS Resume Checker")
 st.header("Increase the chance to secure your dream job.", divider="grey")
 
 jd = st.text_area("Paste job description", height=200)
+st.sidebar.markdown("📝 Instructions")
+st.sidebar.markdown('''
+    **How to use:**
+    1. Upload your resume in PDF format.
+    2. Paste the job description in the text area.
+    3. Click Submit to analyze.
+''')
 upload_file = st.sidebar.file_uploader("Upload your resume", type="pdf", help="Please upload a PDF file")
 submit = st.button("Submit")
 
