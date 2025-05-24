@@ -6,6 +6,11 @@ from openai.types.responses import ResponseTextDeltaEvent
 import asyncio
 import json
 import re
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+GEMINI_API_KEY=os.getenv("GEMINI_API_KEY")
 
 st.set_page_config("Resume analyzer")
 st.title("ATS Resume Checker")
@@ -30,8 +35,12 @@ def extract_json_from_response(response_text):
             return None
 
 async def analyze_resume():
-    ollama_client = AsyncOpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
-    model = OpenAIChatCompletionsModel(model="deepseek-r1:1.5b", openai_client=ollama_client)
+    provider = AsyncOpenAI(
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/", 
+    api_key=GEMINI_API_KEY
+)
+    
+    model = OpenAIChatCompletionsModel(model="gemini-2.0-flash", openai_client=provider)
     set_tracing_disabled(disabled=True)
 
     agent = Agent(
