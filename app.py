@@ -20,11 +20,10 @@ jd = st.text_area("Paste job description", height=200)
 st.sidebar.markdown("📝 Instructions")
 st.sidebar.markdown('''
     **How to use:**
-    1. Upload one or more resumes in PDF format.  # Change: Instructions update ki multiple files ke liye
+    1. Upload one or more resumes in PDF format. 
     2. Paste the job description in the text area.
     3. Click Submit to analyze.
 ''')
-# Change: accept_multiple_files=True add kiya taake multiple PDFs upload ho saken
 upload_files = st.sidebar.file_uploader("Upload your resume(s)", type="pdf", help="Please upload one or more PDF files", accept_multiple_files=True)
 submit = st.button("Submit")
 
@@ -64,19 +63,17 @@ async def analyze_resume():
         model=model,
     )
 
-    # Change: upload_file ke bajaye upload_files check kar rahe hain
     if not upload_files:
         st.error("Please upload at least one resume")
         return
 
-    # Change: Har uploaded file ke liye loop chalaya
     for idx, upload_file in enumerate(upload_files, 1):
-        st.subheader(f"Analysis for Resume {idx}: {upload_file.name}")  # Change: File ka naam aur index show karne ke liye
+        st.subheader(f"Analysis for Resume {idx}: {upload_file.name}")  
         text = input_pdf_text(upload_file)
         input_text = f"Evaluate resume:\n{text}\n\nJob Description:\n{jd}"
         
         result = Runner.run_streamed(starting_agent=agent, input=input_text)
-        response_container = st.empty()  # Change: Har file ke liye alag placeholder
+        response_container = st.empty()  
         full_response = ""
 
         async for event in result.stream_events():
