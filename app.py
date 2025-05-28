@@ -20,11 +20,12 @@ jd = st.text_area("Paste job description", height=200)
 st.sidebar.markdown("📝 Instructions")
 st.sidebar.markdown('''
     **How to use:**
-    1. Upload your resume in PDF format.
+    1. Upload one or more resumes in PDF format.  # Change: Instructions update ki multiple files ke liye
     2. Paste the job description in the text area.
     3. Click Submit to analyze.
 ''')
-upload_file = st.sidebar.file_uploader("Upload your resume", type="pdf", help="Please upload a PDF file")
+# Change: accept_multiple_files=True add kiya taake multiple PDFs upload ho saken
+upload_files = st.sidebar.file_uploader("Upload your resume(s)", type="pdf", help="Please upload one or more PDF files", accept_multiple_files=True)
 submit = st.button("Submit")
 
 def input_pdf_text(uploaded_file):
@@ -43,9 +44,9 @@ def extract_json_from_response(response_text):
 
 async def analyze_resume():
     provider = AsyncOpenAI(
-    base_url="https://generativelanguage.googleapis.com/v1beta/openai/", 
-    api_key=GEMINI_API_KEY
-)
+        base_url="https://generativelanguage.googleapis.com/v1beta/openai/", 
+        api_key=GEMINI_API_KEY
+    )
     
     model = OpenAIChatCompletionsModel(model="gemini-2.0-flash", openai_client=provider)
     set_tracing_disabled(disabled=True)
@@ -63,26 +64,30 @@ async def analyze_resume():
         model=model,
     )
 
-    if not upload_file:
-        st.error("Please upload resume")
+    # Change: upload_file ke bajaye upload_files check kar rahe hain
+    if not upload_files:
+        st.error("Please upload at least one resume")
         return
 
-    text = input_pdf_text(upload_file)
-    input_text = f"Evaluate resume:\n{text}\n\nJob Description:\n{jd}"
-    
-    result = Runner.run_streamed(starting_agent=agent, input=input_text)
-    response_container = st.empty()  
-    full_response = ""
+    # Change: Har uploaded file ke liye loop chalaya
+    for idx, upload_file in enumerate(upload_files, 1):
+        st.subheader(f"Analysis for Resume {idx}: {upload_file.name}")  # Change: File ka naam aur index show karne ke liye
+        text = input_pdf_text(upload_file)
+        input_text = f"Evaluate resume:\n{text}\n\nJob Description:\n{jd}"
+        
+        result = Runner.run_streamed(starting_agent=agent, input=input_text)
+        response_container = st.empty()  # Change: Har file ke liye alag placeholder
+        full_response = ""
 
-    async for event in result.stream_events():
-        if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
-            delta = event.data.delta
-            full_response += delta
-            response_container.markdown(f"```json\n{full_response}\n```")
+        async for event in result.stream_events():
+            if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
+                delta = event.data.delta
+                full_response += delta
+                response_container.markdown(f"```json\n{full_response}\n```")
 
-    # Final processing
-    response_json = extract_json_from_response(full_response)
-    display_results(response_json if response_json else full_response)
+        # Final processing
+        response_json = extract_json_from_response(full_response)
+        display_results(response_json if response_json else full_response)
 
 def display_results(data):
     st.subheader("Analysis Results")
