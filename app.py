@@ -20,7 +20,7 @@ jd = st.text_area("Paste job description", height=200)
 st.sidebar.markdown("📝 Instructions")
 st.sidebar.markdown('''
     **How to use:**
-    1. Upload one or more resumes in PDF format. 
+    1. Upload one or more resumes in PDF format.
     2. Paste the job description in the text area.
     3. Click Submit to analyze.
 ''')
@@ -68,19 +68,20 @@ async def analyze_resume():
         return
 
     for idx, upload_file in enumerate(upload_files, 1):
-        st.subheader(f"Analysis for Resume {idx}: {upload_file.name}")  
+        st.subheader(f"Analysis for Resume {idx}: {upload_file.name}")
         text = input_pdf_text(upload_file)
         input_text = f"Evaluate resume:\n{text}\n\nJob Description:\n{jd}"
         
         result = Runner.run_streamed(starting_agent=agent, input=input_text)
-        response_container = st.empty()  
+        response_container = st.empty()
         full_response = ""
 
         async for event in result.stream_events():
             if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
                 delta = event.data.delta
                 full_response += delta
-                response_container.markdown(f"```json\n{full_response}\n```")
+                # Change: Unwanted JSON formatting remove kiya, ab sirf full_response ko process karne ke liye chor diya
+                # response_container.markdown(f"```json\n{full_response}\n```")
 
         # Final processing
         response_json = extract_json_from_response(full_response)
