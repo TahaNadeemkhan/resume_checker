@@ -14,6 +14,7 @@ GEMINI_API_KEY=os.getenv("GEMINI_API_KEY")
 
 st.set_page_config("Resume analyzer")
 st.title("ATS Resume Checker")
+st.markdown("**Powered by <a href='https://PakistanRecruitment.com' target='_blank'>PakistanRecruitment</a>**", unsafe_allow_html=True)
 st.header("Increase the chance to secure your dream job.", divider="grey")
 
 jd = st.text_area("Paste job description", height=200)
@@ -28,6 +29,7 @@ upload_files = st.sidebar.file_uploader("Upload your resume(s)", type="pdf", hel
 submit = st.button("Submit")
 
 def input_pdf_text(uploaded_file):
+    # Change: Syntax error fix kiya, "derechos/" hata diya
     reader = PyPDF2.PdfReader(uploaded_file)
     return "".join(page.extract_text() for page in reader.pages)
 
@@ -80,8 +82,6 @@ async def analyze_resume():
             if event.type == "raw_response_event" and isinstance(event.data, ResponseTextDeltaEvent):
                 delta = event.data.delta
                 full_response += delta
-                # Change: Unwanted JSON formatting remove kiya, ab sirf full_response ko process karne ke liye chor diya
-                # response_container.markdown(f"```json\n{full_response}\n```")
 
         # Final processing
         response_json = extract_json_from_response(full_response)
